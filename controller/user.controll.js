@@ -45,7 +45,7 @@ const updateUser = async (req, res, next) => {
 
         try {
             const { username, email, password, bio, role } = fields;
-            let profilepicture = '';
+            let profilepicture;
 
             if (files['profilepicture']) {
                 //console.log('File received:', files['profilepicture']);

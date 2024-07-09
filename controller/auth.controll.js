@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const configVariable = require('../config/config');
 const formidable = require('formidable');
 const uploadFile  = require('../utilities/upload.utility');
+const generateOTP = require('../middleware/otp.generate')
+const sendVerificationEmail = require('../services/otp.service');
 
 const registerUser = async (req, res, next) => {
     const form = formidable({ maxFileSize: 400 * 1024 * 1024 }); // 400MB limit
@@ -18,6 +20,7 @@ const registerUser = async (req, res, next) => {
         try {
             const { username, email, password, bio, role } = fields;
             let profilepicture = '';
+            const otpGenerated = await generateOTP();
 
             if (files['profilepicture']) {
                 //console.log('File received:', files['profilepicture']);
@@ -28,22 +31,32 @@ const registerUser = async (req, res, next) => {
                 console.log('No file uploaded.');
             }
 
+            await sendVerificationEmail(email, otpGenerated)
+
             const details = {
                 username,
                 email,
                 password,
                 bio,
                 role,
-                profilepicture
+                profilepicture,
+                otp: otpGenerated
             };
 
             const newUser = await userInstance.createService(details);
-            res.status(201).json(newUser);
+            
+            res.status(201).json({ message: 'User registerd successfully. OTP sent to email.', user: newUser });
         } catch (err) {
             console.error('Error:', err);
             res.status(500).json({ message: err.message });
         }
     });
+};
+
+const verifyEmail = async (req, res) => {
+    const { email, otp } = req.body;
+    const user = await userInstance.validateUserSignUp(email, otp);
+    res.send(user);
 };
 
 
@@ -60,9 +73,10 @@ const loginUser = async (req, res) => {
         if (!validPassword) {
             return res.status(401).json({ message: "invalid username or password"});
         }
-        const {password, ...others } = user._doc;
+       // const { password: _, ...userWithoutPassword } = user._doc
+        const { password: _, ...others } = user._doc;
         const accessToken = jwt.sign({
-            userId: user._id, roles: user.role
+            userId: user._id, role: user.role
         }, configVariable.JWT_SECRET, {expiresIn: '3d'} )
         res.status(200).json({...others, token: accessToken}) 
     } catch (err) {
@@ -70,4 +84,4 @@ const loginUser = async (req, res) => {
     }
 }
 
-module.exports = { registerUser, loginUser };
+module.exports = { registerUser, loginUser, verifyEmail };

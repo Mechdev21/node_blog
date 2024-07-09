@@ -75,29 +75,29 @@ form.parse(req, async (err, fields, files) => {
     try {
         const { id } = req.params;
         const { authorId, title, content, categoryId } = fields;
-        if (!authorId || !categoryId) {
-            res.status(401).json('add the author and the category')
-        }
-        let imgUrl = ''
+        // if (!authorId || !categoryId) {
+        //     res.status(401).json('add the author and the category')
+        //}
+        let imgUrl;
 
         if (files['imgUrl']) {
             const uploadedFile = await uploadFile(files['imgUrl'].filepath, 'intro')
             imgUrl = uploadedFile.url; 
         }
-        const author = await userInstance.findOneUser(authorId);
-        if (!author) {
-            throw res.status(500).json('author not found');
-        }
-        const category = await categoryInstance.findOneCategory(categoryId);
-        if (!category) {
-            throw res.status(500).json('category not found')
-        }
+        // const author = await userInstance.findOneUser(authorId);
+        // if (!author) {
+        //     throw res.status(500).json('author not found');
+        // }
+        // const category = await categoryInstance.findOneCategory(categoryId);
+        // if (!category) {
+        //     throw res.status(500).json('category not found')
+        // }
         const details = {
-            authorId: author._id,
-            title: title,
-            content: content,
-            categoryId: category._id,
-            imgUrl: imgUrl
+            authorId,
+            title,
+            content,
+            categoryId,
+            imgUrl,
         }
         const updated = await postInstance.updateOnePost(id, details);
         res.status(201).json(updated);

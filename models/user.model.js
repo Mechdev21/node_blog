@@ -9,6 +9,7 @@ const UserSchema = new mongoose.Schema(
         password: { type: String, required: true, minlength: 6, match: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{6,}$/ },
         bio: {type: String, maxlength: 300 },
         role: { type: String, enum: ['Admin', 'User'], default: 'User', required: true },
+        otp: { type: String, required: true },
         profilepicture: { type: String },
     },
     {timestamps: true},

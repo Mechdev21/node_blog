@@ -37,6 +37,18 @@ class UserService {
         const updated = await UserModel.findOneAndUpdate({ _id: id}, userInfo, { new: true });
         return updated;
     }
+
+    async validateUserSignUp (email, otp) {
+        const user = await UserModel.findOne({ email: email});
+        if (!user) {
+            return [false, 'user not found']
+        }
+        if (user && user.otp !== otp) {
+            return [false && 'Invalid OTP']
+        } else {
+            return [user, 'Email verifed Successfully']
+        }
+    }
 };
 
 const userService = new UserService();
